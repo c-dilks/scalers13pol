@@ -1,0 +1,6 @@
+#!/bin/bash
+# initialisation script; to be run before anything else
+
+mkdir -p datfiles/badruns
+mkdir -p log
+mkdir -p spinpat

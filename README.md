@@ -1,5 +1,7 @@
 # scalers13pol
 
+Before anything else, run `initialise` to set up some directories
+
 See `doc_diagram.pdf` for a flowchart of data and scripts. Rectangles are scripts to
 be executed and parallelograms are files. You need to have done the polarisation
 analysis using `polar13` as well. Note that this `README` file serves as a more
