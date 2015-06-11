@@ -119,7 +119,7 @@ int main(int argc, char *argv[]) {
       /*------Analyze Channel------*/
       //Read channel
       bunch = (int) (channel >> 25) & 0x7f;
-      printf("bx=%d\n",bunch);
+      //printf("bx=%d\n",bunch);
       //printf("%d\n",bunch);
       if(bunch < 120)
       {
