@@ -26,7 +26,10 @@ for file in $(ls run*.dat); do
   runtime=$(echo $grepstr | awk '{print $2}')
   freq=$(echo $grepstr | awk '{print $3}')
   
-
+  # if it's one of the bad runs of fill 17600, skip it
+  if [ "$fill" -eq "17600" -a "$runnum" -lt "14160010" ]; then
+    continue
+  fi
 
   # check if there's a fill number
   if [ -n "$fill" -a -f ../spinpat/$fill.spin ]; then

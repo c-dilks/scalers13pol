@@ -6,6 +6,7 @@
 *.out
 *.err
 *.dat
+*.tmp
 matrix/rootfiles/*
 pdf_bXings_fills/*
 pdf_bXings_fills_lin/*
