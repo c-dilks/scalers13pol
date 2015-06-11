@@ -1,0 +1,14 @@
+#!/bin/bash
+# submits list of files to HPSS queue and changes "lastrun" to the last run on the list
+
+if [ $# -ne 1 ]; then
+  echo "Usage: $0 [list number]"
+  exit
+fi
+
+f="files_to_retrieve.${1}.lst"
+
+hpss_user.pl -f $f
+hpss_user.pl -w | grep $(whoami)
+echo $(tail -n1 $f | cut -d/ -f8) > lastrun
+mv -v $f submitted/$f.$(date +%s)

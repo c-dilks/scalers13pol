@@ -1,0 +1,48 @@
+#!/bin/bash
+# gets list of runs, grepping for $triggerconf in the trigger configuration name
+#
+# also obtains run duration via start & stop times in seconds
+# also obtains clock frequency, but takes first measurement only
+
+triggerconf="production"
+
+
+echo "updating list of run numbers..."
+mysql --host dbbak.starp.bnl.gov --port 3412 RunLog -e \
+  "SELECT trgSetupName,runNumber,startRunTime,endRunTime FROM runDescriptor" \
+  | grep -v trgSetupName > full_run_list.txt
+mysql --host dbbak.starp.bnl.gov --port 3412 RunLog -e \
+  "SELECT runNumber,blueFillNumber FROM beamInfo" \
+  | uniq | sed 's/\..*$//g' > fill_list.txt
+mysql --host dbbak.starp.bnl.gov --port 3412 RunLog -e \
+  "SELECT runNumber,frequency FROM clockFrequency WHERE entryTag=0" \
+  | uniq > freq_list.txt
+
+grep -E $triggerconf full_run_list.txt > culled_run_list.txt.tmp
+
+> culled_run_list.txt
+
+while read line; do
+  trigger=$(echo $line | awk '{print $1}')
+  run=$(echo $line | awk '{print $2}')
+  starttime=$(echo $line | awk '{print $3}')
+  endtime=$(echo $line | awk '{print $4}')
+  fill=$(grep $run fill_list.txt | awk '{print $2}')
+  freq=$(grep $run freq_list.txt | awk '{print $2}')
+  let t=endtime-starttime
+
+  # run 16083069 was written twice to the DB with 2 different 
+  # fill numbers, the runlog browser claims correct fill is 18806
+  # the following line makes sure only 1 entry is written to
+  # culled_run_list.txt
+  if [ "$run" = "16083069" ]; then fill=18806; fi
+
+  echo "$trigger $run $fill $t $freq"
+  echo "$trigger $run $fill $t $freq" >> culled_run_list.txt
+done < culled_run_list.txt.tmp
+
+#rm culled_run_list.txt.tmp
+#rm fill_list.txt
+#rm freq_list.txt
+
+echo "$(cat culled_run_list.txt|wc -l) runs on list"
