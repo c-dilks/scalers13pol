@@ -24,9 +24,9 @@ while read line; do
       echo "[***] already have spinpat F$FILL"
     else
       wget -nc \
-        http://online.star.bnl.gov/cdev/fillHistory/F$FILL/$BLUENAME
+        http://online.star.bnl.gov/cdev2013/fillHistory/F$FILL/$BLUENAME
       wget -nc \
-        http://online.star.bnl.gov/cdev/fillHistory/F$FILL/$YELLNAME
+        http://online.star.bnl.gov/cdev2013/fillHistory/F$FILL/$YELLNAME
       if [ -e $BLUENAME -a -e $YELLNAME ]; then
         mv -v $BLUENAME ${BLUENAMEOUT}${FILL}.dat
         mv -v $YELLNAME ${YELLNAMEOUT}${FILL}.dat
