@@ -20,21 +20,49 @@ struct hist_hdr {
   unsigned int status2;
   unsigned int status3;
 };
+
+/* BBCpmt[0=east/1=west][chan]
+ *  chan=0: PMT=9,  tile=10
+ *  chan=1: PMT=11,  tile=12
+ *  chan=2: PMT=14,  tile=16
+ *  chan=3: PMT=16,  tile=18
+ * 
+ * VPDpmt[0=east/1=west][chan]
+ *  chan=0: PMT=1
+ *  chan=1: PMT=4
+ *  chan=2: PMT=7
+ *  chan=3: PMT=10
+ *
+ * ZDCsum[0=east/1=west][0=front/1=back]
+ * BBCcoin
+ */  
+
 struct sca_val{
   int bx;                        // bunch crossing
-  unsigned long long valBBC[8];
-  unsigned long long valZDC[8];
-  unsigned long long valVPD[8];
+  unsigned long long BBCpmt[2][4]; // (see comments above)
+  unsigned long long VPDpmt[2][4]; // (see comments above)
+  unsigned long long ZDCsum[2][2]; // (see comments above)
+  unsigned long long BBCcoin;
   unsigned long long valSum;
 };
+
+enum EW{kEast,kWest};
+enum BBCmap{kpmt9tile10,
+            kpmt11tile12,
+            kpmt14tile16,
+            kpmt16tile18};
+enum VPDmap{kpmt1,
+            kpmt4,
+            kpmt7,
+            kpmt10};
+enum ZDCmap{kFront,kBack};
 
 int main(int argc, char *argv[]) {
   struct hist_hdr hist_hdr_l;
   char filename_l[100];
   int fd;
   int bytes_read;
-  int i;
-  int j;
+  int i,j,k;
   unsigned int chn_cnt[3];
   unsigned long long channel;
   unsigned long long count;
@@ -42,7 +70,7 @@ int main(int argc, char *argv[]) {
   int debug_l = 0;
 
   char outfile[100];
-  //char outfilechan[100];
+  char outfilechan[100];
   FILE *fout;
   //FILE * foutchan;
   struct sca_val scaler[128];
@@ -56,16 +84,21 @@ int main(int argc, char *argv[]) {
   for(i=0;i<120;i++)
   {
     scaler[i].bx=i;
-    for(j=0;j<8;j++)
-    {
-      scaler[i].valBBC[j]=0;
-      scaler[i].valZDC[j]=0;
-      scaler[i].valVPD[j]=0;
-    }
-    scaler[i].valSum=0;
-  }
 
-  printf("Usage: scaler2_reader [filename] [debug]\n");
+    for(j=0;j<2;j++)
+    {
+      for(k=0;k<4;k++)
+      {
+        scaler[i].BBCpmt[j][k]=0;
+        scaler[i].VPDpmt[j][k]=0;
+        if(k<2) scaler[i].ZDCsum[j][k]=0;
+      };
+    };
+    scaler[i].BBCcoin=0;
+    scaler[i].valSum=0;
+  };
+
+  printf("Usage: scaler2_reader_bd5 [filename] [debug]\n");
 
   if(argc > 1) strcpy(filename_l, argv[1]);
   else sprintf(filename_l, "out.dat");
@@ -99,7 +132,7 @@ int main(int argc, char *argv[]) {
 
 
     sprintf(outfile,"datfiles/run%d_%d.dat", hist_hdr_l.runnum,hist_hdr_l.bdnum);
-    //sprintf(outfilechan,"chanfiles/run%d_%d.dat", hist_hdr_l.runnum,hist_hdr_l.bdnum);
+    sprintf(outfilechan,"chanfiles/run%d_%d.dat", hist_hdr_l.runnum,hist_hdr_l.bdnum);
     fout=fopen(outfile,"w");
     //foutchan=fopen(outfilechan,"w");
 
@@ -122,39 +155,34 @@ int main(int argc, char *argv[]) {
       //printf("%d\n",bunch);
       if(bunch < 120)
       {
-        ///*
-        chnl_bbc = (int) channel & 0x3;
-        chnl_zdc = (int) (channel >> 10) & 0x7;
-        chnl_vpd = (int) (channel >> 4) & 0x3;
-        if(channel & 0x2000) chnl_bbc += 4;
-        if(channel & 0x4000) chnl_vpd += 4;
-        //*/
+        if((channel >> 0) & 0x1) scaler[bunch].BBCpmt[kWest][kpmt9tile10] += count;
+        if((channel >> 1) & 0x1) scaler[bunch].BBCpmt[kWest][kpmt11tile12] += count;
+        if((channel >> 2) & 0x1) scaler[bunch].BBCpmt[kWest][kpmt14tile16] += count;
+        if((channel >> 3) & 0x1) scaler[bunch].BBCpmt[kWest][kpmt16tile18] += count;
 
-        /*
-        // cross-check of above 
-        chnl_bbc = 0;
-        chnl_zdc = 0;
-        chnl_vpd = 0;
-        if(channel & 0x1) chnl_bbc += 1;
-        if(channel & 0x2) chnl_bbc += 2;
-        if(channel & 0x2000) chnl_bbc += 4;
-        if(channel & 0x400) chnl_zdc += 1;
-        if(channel & 0x800) chnl_zdc += 2;
-        if(channel & 0x1000) chnl_zdc += 4;
-        if(channel & 0x10) chnl_vpd += 1;
-        if(channel & 0x20) chnl_vpd += 2;
-        if(channel & 0x4000) chnl_vpd += 4;
-        */
+        if((channel >> 4) & 0x1) scaler[bunch].BBCpmt[kEast][kpmt9tile10] += count;
+        if((channel >> 5) & 0x1) scaler[bunch].BBCpmt[kEast][kpmt11tile12] += count;
+        if((channel >> 6) & 0x1) scaler[bunch].BBCpmt[kEast][kpmt14tile16] += count;
+        if((channel >> 7) & 0x1) scaler[bunch].BBCpmt[kEast][kpmt16tile18] += count;
 
-        scaler[bunch].valBBC[chnl_bbc] += count;
-        scaler[bunch].valZDC[chnl_zdc] += count;
-        scaler[bunch].valVPD[chnl_vpd] += count;
-        // val[bunch] += count;
-        //channel sum
+        if((channel >> 8) & 0x1) scaler[bunch].VPDpmt[kWest][kpmt1] += count;
+        if((channel >> 9) & 0x1) scaler[bunch].VPDpmt[kWest][kpmt4] += count;
+        if((channel >> 10) & 0x1) scaler[bunch].VPDpmt[kWest][kpmt7] += count;
+        if((channel >> 11) & 0x1) scaler[bunch].VPDpmt[kWest][kpmt10] += count;
+
+        if((channel >> 12) & 0x1) scaler[bunch].VPDpmt[kEast][kpmt1] += count;
+        if((channel >> 13) & 0x1) scaler[bunch].VPDpmt[kEast][kpmt4] += count;
+        if((channel >> 14) & 0x1) scaler[bunch].VPDpmt[kEast][kpmt7] += count;
+        if((channel >> 15) & 0x1) scaler[bunch].VPDpmt[kEast][kpmt10] += count;
+
+        if((channel >> 16) & 0x1) scaler[bunch].ZDCsum[kEast][kFront] += count;
+        if((channel >> 17) & 0x1) scaler[bunch].ZDCsum[kWest][kFront] += count;
+        if((channel >> 18) & 0x1) scaler[bunch].ZDCsum[kEast][kBack] += count;
+        if((channel >> 19) & 0x1) scaler[bunch].ZDCsum[kWest][kBack] += count;
+
+        if((channel >> 20) & 0x1) scaler[bunch].BBCcoin += count;
         scaler[bunch].valSum += count;
-        //printf("chn_cnt[1]=0x%X chn_cnt[2]=0x%X\n    bx=%d chnl_bbc=%d chnl_zdc=%d chnl_vpd=%d channel=%d count=%d\n",
-         // chn_cnt[1],chn_cnt[2],bunch,chnl_bbc,chnl_zdc,chnl_vpd,channel,count);
-        //fprintf(foutchan,"%d %d %d %d %lld %lld\n",bunch,chnl_bbc,chnl_zdc,chnl_vpd,channel,count);
+
       }else
       {
         printf("Bunch Crossing %d Out of Range\n",bunch);
@@ -175,27 +203,37 @@ int main(int argc, char *argv[]) {
   for(i=0;i<120;i++)
   {
     fprintf(fout, "%d ", scaler[i].bx);
-    for(j=0;j<8;j++)
-    {
-      fprintf(fout, "%lld ", scaler[i].valBBC[j]);
-    }
-    //      fprintf(fout, "%lld\n", scaler[i].valSum);
 
-    for(j=0;j<8;j++)
+    for(j=0; j<2; j++)
     {
-      fprintf(fout, "%lld ", scaler[i].valZDC[j]);
-    }
-    //      fprintf(fout, "%lld\n", scaler[i].valSum);
+      for(k=0; k<4; k++)
+      {
+        fprintf(fout,"%lld ",scaler[i].BBCpmt[j][k]);
+      };
+    };
 
-    for(j=0;j<8;j++)
+    for(j=0; j<2; j++)
     {
-      fprintf(fout, "%lld ", scaler[i].valVPD[j]);
-    }
-    fprintf(fout, "%lld\n", scaler[i].valSum);
+      for(k=0; k<4; k++)
+      {
+        fprintf(fout,"%lld ",scaler[i].VPDpmt[j][k]);
+      };
+    };
+
+    for(j=0; j<2; j++)
+    {
+      for(k=0; k<2; k++)
+      {
+        fprintf(fout,"%lld ",scaler[i].ZDCsum[j][k]);
+      };
+    };
+    
+    fprintf(fout,"%lld ",scaler[i].BBCcoin);
+    fprintf(fout,"%lld\n",scaler[i].valSum);
   } 
 
   fclose(fout);
   //fclose(foutchan);
 
-  return 0;
+  return;
 }

@@ -1,11 +1,18 @@
 #!/bin/bash
 # reads all scalers in a condor job
 
+if [ $# -ne 1 ]; then
+  echo "usage: $0 [board#]"
+  exit
+fi
+bd=$1
+
+
 f="reader.bat"
 outdir="datfiles"
-indir="sca2015t"
+indir="sca2013pol"
 
-echo "Executable = scaler2_reader_bit.exe" > $f
+echo "Executable = scaler2_reader_bit_bd$bd.exe" > $f
 echo "Universe = vanilla" >> $f
 echo "notification = never" >> $f
 echo "getenv = True" >> $f
@@ -16,7 +23,7 @@ echo  >> $f
 mkdir -p log
 rm log/*
 set i=0
-for file in $indir/*.dat; do
+for file in $(ls $indir/*$bd.hist.dat); do
   runnum=$(echo $file | sed 's/^.*run//g' | cut -c1-8)
   grepstr=$(grep ${runnum} <<< $(ls datfiles/))
   badstr=$(grep ${runnum} <<< $(ls datfiles/badruns/))

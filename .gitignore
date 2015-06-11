@@ -2,8 +2,10 @@
 *.root
 *.bat
 *.swp
-log/*
-datfiles/*
+*.log
+*.out
+*.err
+*.dat
 matrix/rootfiles/*
 pdf_bXings_fills/*
 pdf_bXings_fills_lin/*

@@ -64,52 +64,45 @@ void sumTree(const char * filename="counts.root")
    *  where bsp = blue subpattern and
    *        ysp = yell subpattern
    *  and "000" indicates pattern recognition failure
-   *
-   * 2015 spin patterns
-   * ------------------
-   *  4 8-bXing subpatterns:
-   *   [1] = + - + - - + - +
-   *   [2] = - + - + + - + -
-   *   [3] = + + - - + + - -
-   *   [4] = - - + + - - + + 
-   *  combine 3 subpatterns to form 4 24-bXing patterns
-   *   P1 = [1] [2] [2]
-   *   P2 = [2] [1] [1]
-   *   P3 = [3] [3] [3]
-   *   P4 = [4] [4] [4]
-   *
-   *   note that below, "pattern_no" is the pattern seen at STAR
-   *   bXings, where blue bunch 0 collides with yell bunch 80 and
-   *   there is an odd number of spin flips from the proton source;
-   *   "pattern_no_cdev" is the pattern number seen at CDEV
-   *   (i.e. without yellow cogging and spin flip)
   */
 
   Int_t subpattern[4][8]; // [subpattern no.] [bXing]
 
-  subpattern[0][0] =  1; // subpattern 1
-  subpattern[0][1] = -1;
-  subpattern[0][2] =  1;
+  subpattern[0][0] =  1; // subpattern 1 + + - - + + - -
+  subpattern[0][1] =  1;
+  subpattern[0][2] = -1;
   subpattern[0][3] = -1;
-  subpattern[0][4] = -1;
+  subpattern[0][4] =  1;
   subpattern[0][5] =  1;
   subpattern[0][6] = -1;
-  subpattern[0][7] =  1;
+  subpattern[0][7] = -1;
 
-  subpattern[2][0] =  1; // subpattern 3
+  subpattern[1][0] = -1; // subpattern 2 - - + + - - + +
+  subpattern[1][1] = -1;
+  subpattern[1][2] =  1;
+  subpattern[1][3] =  1;
+  subpattern[1][4] = -1;
+  subpattern[1][5] = -1;
+  subpattern[1][6] =  1;
+  subpattern[1][7] =  1;
+
+  subpattern[2][0] =  1; // subpattern 3 + + - - - - + +
   subpattern[2][1] =  1;
   subpattern[2][2] = -1;
   subpattern[2][3] = -1;
-  subpattern[2][4] =  1;
-  subpattern[2][5] =  1;
-  subpattern[2][6] = -1;
-  subpattern[2][7] = -1;
+  subpattern[2][4] = -1;
+  subpattern[2][5] = -1;
+  subpattern[2][6] =  1;
+  subpattern[2][7] =  1;
 
-  for(Int_t b=0; b<8; b++)
-  {
-    subpattern[1][b] = -1 * subpattern[0][b]; // subpattern 2
-    subpattern[3][b] = -1 * subpattern[2][b]; // subpattern 4
-  };
+  subpattern[3][0] = -1; // subpattern 4 - - + + + + - -
+  subpattern[3][1] = -1;
+  subpattern[3][2] =  1;
+  subpattern[3][3] =  1;
+  subpattern[3][4] =  1;
+  subpattern[3][5] =  1;
+  subpattern[3][6] = -1;
+  subpattern[3][7] = -1;
 
 
   // fill sum tree

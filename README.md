@@ -1,8 +1,8 @@
-# scalers15t
+# scalers13pol
 
 See `doc_diagram.pdf` for a flowchart of data and scripts. Rectangles are scripts to
 be executed and parallelograms are files. You need to have done the polarisation
-analysis using `polar15t` as well. Note that this `README` file serves as a more
+analysis using `polar13` as well. Note that this `README` file serves as a more
 descriptive guide as to what each script does; see the section "Scripts and Files" below
 for descriptions of the scripts and data files (somewhat in order of execution).
 
@@ -15,7 +15,7 @@ make some subdirectories such as `datfiles`; scan through `doc_diagram.pdf`
 
 ## Adding new runs to analysis
 
-- On RCAS, follow directions in `~/scalers2015/README.md` to download new files from HPSS
+- On RCAS, follow directions in `~/scalers2013pol/README.md` to download new files from HPSS
 
 - Download datfiles to local machine: `get_scaler_files` 
 
@@ -57,11 +57,11 @@ make some subdirectories such as `datfiles`; scan through `doc_diagram.pdf`
 
 - `read_scalers`
   - makes a condor job for executing the scaler reader for all scaler board files in the
-    subdirectory `sca2015`; the files are output to `datfiles/*.dat` and contain columns
+    subdirectory `sca2013pol`; the files are output to `datfiles/*.dat` and contain columns
     [bXing] [bbc bits 0-7] [zdc bits 0-7] [vpd bits 0-7]
   - the scaler bit reader is called `scaler2_reader_bit.c`; you need to compile it
     using `make` which produces the binary `scaler2_reader_bit.exe`
-    - this file is the 32-bit reader for run15; see `bit_doc.txt` and `bit_map.pdf` 
+    - this file is the 32-bit reader for run13; see `bit_doc.txt` and `bit_map.pdf` 
       as well as the scaler router map on the trigger webpage for further info about
       the scaler bit maps
 
