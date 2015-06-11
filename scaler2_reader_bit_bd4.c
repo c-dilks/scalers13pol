@@ -139,10 +139,13 @@ int main(int argc, char *argv[]) {
         //printf("chn_cnt[1]=0x%X chn_cnt[2]=0x%X\n    bx=%d chnl_bbc=%d chnl_zdc=%d chnl_vpd=%d channel=%d count=%d\n",
          // chn_cnt[1],chn_cnt[2],bunch,chnl_bbc,chnl_zdc,chnl_vpd,channel,count);
         //fprintf(foutchan,"%d %d %d %d %lld %lld\n",bunch,chnl_bbc,chnl_zdc,chnl_vpd,channel,count);
-      }else
+      }
+      /*
+      else
       {
         printf("Bunch Crossing %d Out of Range\n",bunch);
       }
+      */
       /*------Done------*/
       sum += count;
       if(debug_l) printf("Channel 0x%12.12llx = 0x%12.12llx Counts\n", channel, count);

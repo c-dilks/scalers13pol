@@ -183,10 +183,13 @@ int main(int argc, char *argv[]) {
         if((channel >> 20) & 0x1) scaler[bunch].BBCcoin += count;
         scaler[bunch].valSum += count;
 
-      }else
+      }
+      /*
+      else
       {
         printf("Bunch Crossing %d Out of Range\n",bunch);
       }
+      */
       /*------Done------*/
       sum += count;
       if(debug_l) printf("Channel 0x%12.12llx = 0x%12.12llx Counts\n", channel, count);
