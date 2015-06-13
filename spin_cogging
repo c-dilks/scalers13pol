@@ -12,6 +12,14 @@
 #    is implemented below
 
 
+# define spin patterns
+pattern1=( 1 1 -1 -1 1 1 -1 -1 )
+pattern2=( -1 -1 1 1 -1 -1 1 1 )
+pattern3=( 1 1 -1 -1 -1 -1 1 1 )
+pattern4=( -1 -1 1 1 1 1 -1 -1 )
+for x in {0..7}; do y=$(echo $x); echo "${pattern2[$y]}"; done
+
+
 cat fill.txt | awk '{print $2}' | uniq > fill_tmp.txt
 polstr="-buckets-polarization-fillpatterns.fill"
 while read fill; do
@@ -63,10 +71,57 @@ while read fill; do
       > spinpat/$fill.spin
       cat spinpat/bXing.yell.$fill.dat | awk '{print $2}' > spinpat/bXing.yell.$fill.tmp
       paste spinpat/bXing.{blue.$fill.dat,yell.$fill.tmp} > spinpat/$fill.spin
+
+      # determine spin pattern
+      bcount=( 0 0 0 0 )
+      ycount=( 0 0 0 0 )
+      while read spinline; do
+        bx=$(echo $spinline | awk '{print $1}')
+        if [ $bx -lt 8 ]; then
+          bxx=$(echo "bx+1"|bc)
+          bp=$(echo $spinline | awk '{print $2}')
+          yp=$(echo $spinline | awk '{print $3}')
+          echo "bx=$bx bp=$bp yp=$yp"
+
+          if [ $bp -eq ${pattern1[$bx]} ]; then (( bcount[0]++ )); fi
+          if [ $bp -eq ${pattern2[$bx]} ]; then (( bcount[1]++ )); fi
+          if [ $bp -eq ${pattern3[$bx]} ]; then (( bcount[2]++ )); fi
+          if [ $bp -eq ${pattern4[$bx]} ]; then (( bcount[3]++ )); fi
+
+          if [ $yp -eq ${pattern1[$bx]} ]; then (( ycount[0]++ )); fi
+          if [ $yp -eq ${pattern2[$bx]} ]; then (( ycount[1]++ )); fi
+          if [ $yp -eq ${pattern3[$bx]} ]; then (( ycount[2]++ )); fi
+          if [ $yp -eq ${pattern4[$bx]} ]; then (( ycount[3]++ )); fi
+        elif [ $bx -eq 8 ]; then
+          bluepattern=0
+          yellpattern=0
+          for x in {0..3}; do
+            echo "bcount[$x]=${bcount[$x]}"
+            echo "ycount[$x]=${ycount[$x]}"
+            if [ ${bcount[$x]} -eq 8 ]; then let bluepattern=x+1; fi
+            if [ ${ycount[$x]} -eq 8 ]; then let yellpattern=x+1; fi
+            echo "bluepattern=$bluepattern yellpattern=$yellpattern"
+          done
+          pattern=$(echo "10*$bluepattern+$yellpattern" | bc)
+          echo "pattern=$pattern"
+          > tempo
+          for x in {0..119}; do
+            grepstr="$(grep "$fill $x " kicked)"
+            if [ -z "$grepstr" ]; then
+              echo "$pattern 0" >> tempo
+            else
+              echo "$pattern 1" >> tempo
+            fi
+          done
+          paste spinpat/$fill.spin tempo > spinpat/$fill.spin.pat
+          continue
+        fi
+      done < spinpat/$fill.spin
     fi
   fi
 done < fill_tmp.txt
 
 rm fill_tmp.txt
 rm spinpat/tmp
+rm tempo
 echo "spinpat/*.spin files generated"

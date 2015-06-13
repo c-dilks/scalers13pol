@@ -28,6 +28,7 @@ for file in $(ls run*.dat); do
   
   # if it's one of the bad runs of fill 17600, skip it
   if [ "$fill" -eq "17600" -a "$runnum" -lt "14160010" ]; then
+    echo "not including"
     continue
   fi
 
@@ -35,7 +36,7 @@ for file in $(ls run*.dat); do
   if [ -n "$fill" -a -f ../spinpat/$fill.spin ]; then
     if [ ! -e spin$fill.tmp ]; then
       # obtain spin patterns
-      cat ../spinpat/$fill.spin | awk '{print $2" "$3}' > spin$fill.tmp
+      cat ../spinpat/$fill.spin.pat | awk '{print $2" "$3" "$4" "$5}' > spin$fill.tmp
     fi
     if [ ! -e $file.tmp ]; then
       # add two columns to dat file with spin info

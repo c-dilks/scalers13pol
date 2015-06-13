@@ -5,30 +5,55 @@
 void mk_tree(const char * acc_file="datfiles/acc.dat")
 {
   // read acc file into tree
+  TFile * outfile = new TFile("counts.root","RECREATE");
   TTree * acc = new TTree("acc","counts tree from acc.dat");
-  char cols[1024];
-  char bbc_cols[256];
-  char zdc_cols[256];
-  char vpd_cols[256];
-  for(Int_t i=0; i<=7; i++)
+  char cols[2048];
+  char bbc_cols[512];
+  char zdc_cols[512];
+  char vpd_cols[512];
+
+  char EW[2][16];
+  char bbc_map[4][16];
+  char vpd_map[4][16];
+  char zdc_map[2][16];
+
+  strcpy(bbc_cols,"");
+  strcpy(vpd_cols,"");
+  strcpy(zdc_cols,"");
+
+  strcpy(EW[0],"e");
+  strcpy(EW[1],"w");
+
+  strcpy(bbc_map[0],"9");
+  strcpy(bbc_map[1],"11");
+  strcpy(bbc_map[2],"14");
+  strcpy(bbc_map[3],"16");
+
+  strcpy(vpd_map[0],"1");
+  strcpy(vpd_map[1],"4");
+  strcpy(vpd_map[2],"7");
+  strcpy(vpd_map[3],"10");
+
+  strcpy(zdc_map[0],"f");
+  strcpy(zdc_map[1],"b");
+
+  for(Int_t j=0; j<2; j++)
   {
-    if(i==0) 
+    for(Int_t k=0; k<4; k++)
     {
-      sprintf(bbc_cols,"bbc_%d/D",i);
-      sprintf(zdc_cols,"zdc_%d/D",i);
-      sprintf(vpd_cols,"vpd_%d/D",i);
-    }
-    else
-    {
-      sprintf(bbc_cols,"%s:bbc_%d/D",bbc_cols,i);
-      sprintf(zdc_cols,"%s:zdc_%d/D",zdc_cols,i);
-      sprintf(vpd_cols,"%s:vpd_%d/D",vpd_cols,i);
+      sprintf(bbc_cols,"%s:b%s%s/D",bbc_cols,EW[j],bbc_map[k]);
+      sprintf(vpd_cols,"%s:v%s%s/D",vpd_cols,EW[j],vpd_map[k]);
+      if(k<2) sprintf(zdc_cols,"%s:z%s%s/D",zdc_cols,EW[j],zdc_map[k]);
     };
   };
-  sprintf(cols,"i/I:runnum/I:fi/I:fill/I:t/D:freq/D:bx/I:%s:%s:%s:tot_bx/D:blue/I:yell/I",bbc_cols,zdc_cols,vpd_cols);
+
+  sprintf(cols,"i/I:runnum/I:fi/I:fill/I:t/D:freq/D:bx/I%s%s%s:BBCcoin/D:tot_bx/D:blue/I:yell/I:pattern/I:kicked/I",bbc_cols,vpd_cols,zdc_cols);
   printf("%s\n",cols);
   acc->ReadFile(acc_file,cols);
 
+  acc->Write("acc");
+
+  return;
 
   // set branch addresses to read through acc tree
   Int_t index,runnum,fill_index,fill,bx;
