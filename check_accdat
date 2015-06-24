@@ -1,0 +1,14 @@
+#!/bin/bash
+
+while read line; do
+  #bx=$(echo $line | awk '{print $7}')
+  #if [ $bx == 7 ]; then
+    rr=$(echo $line | awk '{print $2}')
+    cc=$(wc -w <<< $line)
+    if [ $cc != 36 ]; then
+      echo "$rr $cc ------------------- BAD"
+    else
+      echo "$rr $cc"
+    fi
+  #fi
+done < datfiles/acc.dat

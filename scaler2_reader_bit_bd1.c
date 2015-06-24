@@ -22,18 +22,12 @@ struct hist_hdr {
 };
 struct sca_val{
   int bx;                        // bunch crossing
-  unsigned long long valHorZDC[2][3];
-  unsigned long long valVerZDC[2][3];
-  unsigned long long valTrunZDC[2][3];
-  unsigned long long valFronZDC[2];
-  unsigned long long valBakZDC[2];
-  unsigned long long valGoodZDC[2];
- /* unsigned long long valHorZDC_E[8];
-  unsigned long long valVerZDC_E[8];
-  unsigned long long valTrunZDC_E[8];
-  unsigned long long valFronZDC_E;
-  unsigned long long valBakZDC_E;
-  unsigned long long valGoodZDC_E;*/
+  unsigned long long valHorZDC[2][8]; // [0=west / 1=east] [3 bits--> integer btwn 0-7]
+  unsigned long long valVerZDC[2][8]; // [0=west / 1=east] [3 bits--> integer btwn 0-7]
+  unsigned long long valTrunZDC[2][8]; // [0=west / 1=east] [3 bits--> integer btwn 0-7]
+  unsigned long long valFronZDC[2]; // [0=west / 1=east]
+  unsigned long long valBakZDC[2]; // [0=west / 1=east]
+  unsigned long long valGoodZDC[2]; // [0=west / 1=east]
   unsigned long long valSum;
 };
 
@@ -78,23 +72,17 @@ int main(int argc, char *argv[]) {
   {
     scaler[i].bx=i;
     for(k=0;k<2;k++)
+    {
+     for(j=0;j<8;j++)
      {
-     for(j=0;j<3;j++)
-      {
        scaler[i].valHorZDC[k][j]=0;
        scaler[i].valVerZDC[k][j]=0;
        scaler[i].valTrunZDC[k][j]=0;
-      /* scaler[i].valHorZDC_E[j]=0;
-       scaler[i].valVerZDC_E[j]=0;
-       scaler[i].valTrunZDC_E[j]=0;*/
-      }
+     }
      scaler[i].valFronZDC[k]=0;
      scaler[i].valBakZDC[k]=0;
      scaler[i].valGoodZDC[k]=0;
-   /* scaler[i].valFronZDC_E=0;
-    scaler[i].valBakZDC_E=0;
-    scaler[i].valGoodZDC_E=0;*/
-     }
+    }
     scaler[i].valSum=0;
   }
 
@@ -156,30 +144,74 @@ int main(int argc, char *argv[]) {
       //printf("%d\n",bunch);
       if(bunch < 120)
       {
+       ///*
        for(k=0;k<2;k++)
        {
-        for(j=0;j<3;j++)
-        {
-         if(channel >> (j+11*k) & 0x1)
-         scaler[bunch].valHorZDC[k][j] += count;
-        }
-        for(j=0;j<3;j++)
-        {
-         if(channel >> (j+3+11*k) & 0x1)
-         scaler[bunch].valVerZDC[k][j] += count;
-        }
-        for(j=0;j<3;j++)
-        {
-         if(channel >> (j+6+11*k) & 0x1)
-         scaler[bunch].valTrunZDC[k][j] += count;
-        }
-        if(channel >> (10+11*k) & 0x1)
-        scaler[bunch].valFronZDC[k] += count;
-        if(channel >> (11+11*k) & 0x1)
-        scaler[bunch].valBakZDC[k] += count;
-        if(channel >> (10+11*k) & 0x1)
-        scaler[bunch].valGoodZDC[k] += count;
+         // TAC cut if statement
+         if(channel >> (11+12*k) & 0x1)
+         {
+           // There are 8 horizontal slats and 7 vertical slats, 
+           // numbered 0-7 and 0-6 respectively;
+           // if vertical slat 7 fired, that means there was no
+           // vertical slat hit and/or no horisontal slat hit;
+           // thus we filter out cases where vertical slat = 7
+           if((channel >> (3+12*k) & 0x7) != 7)
+           {
+
+             j=(channel >> (0+12*k) & 0x7);
+             scaler[bunch].valHorZDC[k][j] += count;
+
+             j=(channel >> (3+12*k) & 0x7);
+             scaler[bunch].valVerZDC[k][j] += count;
+
+             j=(channel >> (6+12*k) & 0x7);
+             scaler[bunch].valTrunZDC[k][j] += count;
+
+             if(channel >> (9+12*k) & 0x1)
+               scaler[bunch].valFronZDC[k] += count;
+             if(channel >> (10+12*k) & 0x1)
+               scaler[bunch].valBakZDC[k] += count;
+             if(channel >> (11+12*k) & 0x1)
+               scaler[bunch].valGoodZDC[k] += count;
+           }
+         }
        }
+       //*/
+
+       /*
+       if((channel >> 0) & 0x1) scaler[bunch].valHorZDC[0][0] += count;
+       if((channel >> 1) & 0x1) scaler[bunch].valHorZDC[0][1] += count;
+       if((channel >> 2) & 0x1) scaler[bunch].valHorZDC[0][2] += count;
+
+       if((channel >> 3) & 0x1) scaler[bunch].valVerZDC[0][0] += count;
+       if((channel >> 4) & 0x1) scaler[bunch].valVerZDC[0][1] += count;
+       if((channel >> 5) & 0x1) scaler[bunch].valVerZDC[0][2] += count;
+
+       if((channel >> 6) & 0x1) scaler[bunch].valTrunZDC[0][0] += count;
+       if((channel >> 7) & 0x1) scaler[bunch].valTrunZDC[0][1] += count;
+       if((channel >> 8) & 0x1) scaler[bunch].valTrunZDC[0][2] += count;
+
+       if((channel >> 9) & 0x1) scaler[bunch].valFronZDC[0] += count;
+       if((channel >> 10) & 0x1) scaler[bunch].valBakZDC[0] += count;
+       if((channel >> 11) & 0x1) scaler[bunch].valGoodZDC[0] += count;
+
+       if((channel >> 12) & 0x1) scaler[bunch].valHorZDC[1][0] += count;
+       if((channel >> 13) & 0x1) scaler[bunch].valHorZDC[1][1] += count;
+       if((channel >> 14) & 0x1) scaler[bunch].valHorZDC[1][2] += count;
+
+       if((channel >> 15) & 0x1) scaler[bunch].valVerZDC[1][0] += count;
+       if((channel >> 16) & 0x1) scaler[bunch].valVerZDC[1][1] += count;
+       if((channel >> 17) & 0x1) scaler[bunch].valVerZDC[1][2] += count;
+
+       if((channel >> 18) & 0x1) scaler[bunch].valTrunZDC[1][0] += count;
+       if((channel >> 19) & 0x1) scaler[bunch].valTrunZDC[1][1] += count;
+       if((channel >> 20) & 0x1) scaler[bunch].valTrunZDC[1][2] += count;
+
+       if((channel >> 21) & 0x1) scaler[bunch].valFronZDC[1] += count;
+       if((channel >> 22) & 0x1) scaler[bunch].valBakZDC[1] += count;
+       if((channel >> 23) & 0x1) scaler[bunch].valGoodZDC[1] += count;
+       */
+
        scaler[bunch].valSum += count;
         //BBC Coincidence
 /*        chnl_bbc = (int) channel & 0x3;
@@ -198,7 +230,7 @@ int main(int argc, char *argv[]) {
         //fprintf(foutchan,"%d %d %d %d %lld %lld\n",bunch,chnl_bbc,chnl_zdc,chnl_vpd,channel,count);*/
       }else
       {
-        printf("Bunch Crossing %d Out of Range\n",bunch);
+        //printf("Bunch Crossing %d Out of Range\n",bunch);
       }
       /*------Done------*/
       sum += count;
@@ -217,15 +249,15 @@ int main(int argc, char *argv[]) {
     fprintf(fout, "%d ", scaler[i].bx);
     for(k=0;k<2;k++)
     {
-     for(j=0;j<3;j++)
+     for(j=0;j<8;j++)
      {
        fprintf(fout, "%lld ", scaler[i].valHorZDC[k][j]);
      }
-     for(j=0;j<3;j++)
+     for(j=0;j<8;j++)
      {
        fprintf(fout, "%lld ", scaler[i].valVerZDC[k][j]);
      }
-     for(j=0;j<3;j++)
+     for(j=0;j<8;j++)
      {
        fprintf(fout, "%lld ", scaler[i].valTrunZDC[k][j]);
      }
@@ -233,47 +265,9 @@ int main(int argc, char *argv[]) {
      fprintf(fout, "%lld ", scaler[i].valBakZDC[k]);
      fprintf(fout, "%lld ", scaler[i].valGoodZDC[k]);
     }
-   /* for(j=0;j<8;j++)
-    {
-      fprintf(fout, "%lld ", scaler[i].valHorZDC_E[j]);
-    }
-    for(j=0;j<8;j++)
-    {
-      fprintf(fout, "%lld ", scaler[i].valVerZDC_E[j]);
-    }
-    for(j=0;j<8;j++)
-    {
-      fprintf(fout, "%lld ", scaler[i].valTrunZDC_E[j]);
-    }
-    fprintf(fout, "%lld ", scaler[i].valFronZDC_E);
-    fprintf(fout, "%lld ", scaler[i].valBakZDC_E);
-    fprintf(fout, "%lld ", scaler[i].valGoodZDC_E);*/
     fprintf(fout, "%lld\n", scaler[i].valSum);
   } 
 
-/*
-  for(i=0;i<120;i++)
-  {
-    fprintf(fout, "%d ", scaler[i].bx);
-    for(j=0;j<8;j++)
-    {
-      fprintf(fout, "%lld ", scaler[i].valBBC[j]);
-    }
-    //      fprintf(fout, "%lld\n", scaler[i].valSum);
-
-    for(j=0;j<8;j++)
-    {
-      fprintf(fout, "%lld ", scaler[i].valZDC[j]);
-    }
-    //      fprintf(fout, "%lld\n", scaler[i].valSum);
-
-    for(j=0;j<4;j++)
-    {
-      fprintf(fout, "%lld ", scaler[i].valVPD[j]);
-    }
-    fprintf(fout, "%lld\n", scaler[i].valSum);
-  } 
-*/
   fclose(fout);
   //fclose(foutchan);
 

@@ -2,8 +2,16 @@
 # collects all the datfiles produced by "read_scalers"
 # and appends run number and fill number to each line
 
+if [ $# -ne 1 ]; then
+  echo "usage: $0 [board number]"
+  echo "  1 -- ZDC polarimetry"
+  echo "  4 -- luminosity"
+  echo "  5 -- BBC and VPD polarimetry"
+  exit
+fi
 
-dir="datfiles"
+
+dir="datfiles_bd${1}"
 f="acc.dat"
 
 # delete any remaining tmp files
@@ -63,4 +71,4 @@ rm $dir/*.tmp
 
 echo "$dir/$f written"
 
-root -b -q 'mk_tree.C("'$dir/$f'")'
+root -b -q 'mk_tree.C("'$dir/$f'",'$1')'

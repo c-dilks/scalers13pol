@@ -2,17 +2,39 @@
 // -- this also allows for empty bunches documented in "pathologies.dat" to be manually omitted
 //    from relative luminosity computation ("CLEAN UP PROCEDURE")
 
-void mk_tree(const char * acc_file="datfiles/acc.dat")
+void mk_tree(const char * acc_file="datfiles/acc.dat",Int_t board)
 {
   // read acc file into tree
-  TFile * outfile = new TFile("counts.root","RECREATE");
+  char outfile_n[64];
+  sprintf(outfile_n,"counts_bd%d.root",board);
+  TFile * outfile = new TFile(outfile_n,"RECREATE");
   TTree * acc = new TTree("acc","counts tree from acc.dat");
   char cols[2048];
+  char EW[2][16];
+
+  if(board==1)
+  {
+    strcpy(EW[0],"w");
+    strcpy(EW[1],"e");
+  }
+  else if(board==5)
+  {
+    strcpy(EW[0],"e");
+    strcpy(EW[1],"w");
+  }
+  else 
+  {
+    fprintf(stderr,"ERROR: board != 1 or 5\n");
+    return;
+  };
+
+  // board 1
+  char ZDCcols[2][512];
+
+  // board 5
   char bbc_cols[512];
   char zdc_cols[512];
   char vpd_cols[512];
-
-  char EW[2][16];
   char bbc_map[4][16];
   char vpd_map[4][16];
   char zdc_map[2][16];
@@ -20,10 +42,7 @@ void mk_tree(const char * acc_file="datfiles/acc.dat")
   strcpy(bbc_cols,"");
   strcpy(vpd_cols,"");
   strcpy(zdc_cols,"");
-
-  strcpy(EW[0],"e");
-  strcpy(EW[1],"w");
-
+  
   strcpy(bbc_map[0],"9");
   strcpy(bbc_map[1],"11");
   strcpy(bbc_map[2],"14");
@@ -37,17 +56,39 @@ void mk_tree(const char * acc_file="datfiles/acc.dat")
   strcpy(zdc_map[0],"f");
   strcpy(zdc_map[1],"b");
 
-  for(Int_t j=0; j<2; j++)
+  
+  if(board==1)
   {
-    for(Int_t k=0; k<4; k++)
+    for(Int_t j=0; j<2; j++)
     {
-      sprintf(bbc_cols,"%s:b%s%s/D",bbc_cols,EW[j],bbc_map[k]);
-      sprintf(vpd_cols,"%s:v%s%s/D",vpd_cols,EW[j],vpd_map[k]);
-      if(k<2) sprintf(zdc_cols,"%s:z%s%s/D",zdc_cols,EW[j],zdc_map[k]);
+      strcpy(ZDCcols[j],"");
+      for(Int_t k=0; k<8; k++) sprintf(ZDCcols[j],"%s:%sh%d",ZDCcols[j],EW[j],k);
+      for(Int_t k=0; k<8; k++) sprintf(ZDCcols[j],"%s:%sv%d",ZDCcols[j],EW[j],k);
+      for(Int_t k=0; k<8; k++) sprintf(ZDCcols[j],"%s:%stsum%d",ZDCcols[j],EW[j],k);
+      sprintf(ZDCcols[j],"%s:%sf",ZDCcols[j],EW[j]);
+      sprintf(ZDCcols[j],"%s:%sb",ZDCcols[j],EW[j]);
+      sprintf(ZDCcols[j],"%s:%stac",ZDCcols[j],EW[j]);
     };
+
+    sprintf(cols,"i/I:runnum/I:fi/I:fill/I:t/D:freq/D:bx/I%s%s:tot_bx/D:blue/I:yell/I:pattern/I:kicked/I",ZDCcols[0],ZDCcols[1]);
+  }
+
+  else if(board==5)
+  {
+    for(Int_t j=0; j<2; j++)
+    {
+      for(Int_t k=0; k<4; k++)
+      {
+        sprintf(bbc_cols,"%s:b%s%s/D",bbc_cols,EW[j],bbc_map[k]);
+        sprintf(vpd_cols,"%s:v%s%s/D",vpd_cols,EW[j],vpd_map[k]);
+        if(k<2) sprintf(zdc_cols,"%s:z%s%s/D",zdc_cols,EW[j],zdc_map[k]);
+      };
+    };
+
+    sprintf(cols,"i/I:runnum/I:fi/I:fill/I:t/D:freq/D:bx/I%s%s%s:BBCcoin/D:tot_bx/D:blue/I:yell/I:sp/I",bbc_cols,vpd_cols,zdc_cols);
   };
 
-  sprintf(cols,"i/I:runnum/I:fi/I:fill/I:t/D:freq/D:bx/I%s%s%s:BBCcoin/D:tot_bx/D:blue/I:yell/I:pattern/I:kicked/I",bbc_cols,vpd_cols,zdc_cols);
+
   printf("%s\n",cols);
   acc->ReadFile(acc_file,cols);
 
@@ -145,8 +186,7 @@ void mk_tree(const char * acc_file="datfiles/acc.dat")
     sca->Fill(); // new kick method
   };
 
-  TFile * outfile = new TFile("counts.root","RECREATE");
   acc->Write("acc");
   sca->Write("sca");
-  printf("counts.root written\n");
+  printf("%s written\n",outfile_n);
 };
