@@ -29,7 +29,7 @@ void mk_tree(const char * acc_file="datfiles/acc.dat",Int_t board)
   };
 
   // board 1
-  char ZDCcols[2][512];
+  char ZDCcols[2][2048];
 
   // board 5
   char bbc_cols[512];
@@ -62,12 +62,12 @@ void mk_tree(const char * acc_file="datfiles/acc.dat",Int_t board)
     for(Int_t j=0; j<2; j++)
     {
       strcpy(ZDCcols[j],"");
-      for(Int_t k=0; k<8; k++) sprintf(ZDCcols[j],"%s:%sh%d",ZDCcols[j],EW[j],k);
-      for(Int_t k=0; k<8; k++) sprintf(ZDCcols[j],"%s:%sv%d",ZDCcols[j],EW[j],k);
-      for(Int_t k=0; k<8; k++) sprintf(ZDCcols[j],"%s:%stsum%d",ZDCcols[j],EW[j],k);
-      sprintf(ZDCcols[j],"%s:%sf",ZDCcols[j],EW[j]);
-      sprintf(ZDCcols[j],"%s:%sb",ZDCcols[j],EW[j]);
-      sprintf(ZDCcols[j],"%s:%stac",ZDCcols[j],EW[j]);
+      for(Int_t k=0; k<8; k++) sprintf(ZDCcols[j],"%s:%sh%d/D",ZDCcols[j],EW[j],k);
+      for(Int_t k=0; k<8; k++) sprintf(ZDCcols[j],"%s:%sv%d/D",ZDCcols[j],EW[j],k);
+      for(Int_t k=0; k<8; k++) sprintf(ZDCcols[j],"%s:%stsum%d/D",ZDCcols[j],EW[j],k);
+      sprintf(ZDCcols[j],"%s:%sf/D",ZDCcols[j],EW[j]);
+      sprintf(ZDCcols[j],"%s:%sb/D",ZDCcols[j],EW[j]);
+      sprintf(ZDCcols[j],"%s:%stac/D",ZDCcols[j],EW[j]);
     };
 
     sprintf(cols,"i/I:runnum/I:fi/I:fill/I:t/D:freq/D:bx/I%s%s:tot_bx/D:blue/I:yell/I:pattern/I:kicked/I",ZDCcols[0],ZDCcols[1]);
